@@ -17,10 +17,10 @@ module.exports = yeoman.generators.Base.extend({
     ));
 
     var prompts = [{
-      type: 'confirm',
-      name: 'someOption',
-      message: 'Would you like to enable this option?',
-      default: true
+      type: 'input',
+      name: 'campaign',
+      message: 'What should we call this email campaign?',
+      default: this.appName
     },{
 
     }];
