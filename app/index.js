@@ -13,7 +13,7 @@ module.exports = yeoman.generators.Base.extend({
 
     // Have Yeoman greet the user.
     this.log(yosay(
-      'Welcome to' + chalk.red('Juicr') + '. The email generator!'
+      'Welcome to ' + chalk.red('Juicr') + '. The email generator!'
     ));
 
     var prompts = [{
@@ -21,6 +21,8 @@ module.exports = yeoman.generators.Base.extend({
       name: 'someOption',
       message: 'Would you like to enable this option?',
       default: true
+    },{
+
     }];
 
     this.prompt(prompts, function (props) {
