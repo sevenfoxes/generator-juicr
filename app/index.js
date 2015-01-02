@@ -1,7 +1,7 @@
 'use strict';
 var yeoman = require('yeoman-generator');
-var chalk = require('chalk');
-var yosay = require('yosay');
+var chalk  = require('chalk');
+var yosay  = require('yosay');
 
 var baseNodeRequirements = [
   'connect-livereload',
@@ -12,7 +12,8 @@ var baseNodeRequirements = [
   'grunt-contrib-watch',
   'juice',
   'grunt-juice-email',
-  'grunt-open'
+  'grunt-open',
+  'grunt-bowercopy'
 ];
 var baseBowerRequirements = [
   'ink'
@@ -64,49 +65,66 @@ module.exports = yeoman.generators.Base.extend({
       this.campaign     = props.campaign;
       this.preprocessor = props.preprocessor;
 
+      if (this.preprocessor === 'sass') {
+        this.preprocessorExtension = 'scss';
+      }
+
       done();
     }.bind(this));
   },
 
-  folderScaffolding: {
+  writing: {
     app: function() {
-      this.fs.copy(
+      this.fs.copyTpl(
         this.templatePath('_package.json'),
-        this.destinationPath('package.json')
+        this.destinationPath('package.json'),
+        { name: this.campaign}
       );
 
-      this.fs.copy(
+      this.fs.copyTpl(
         this.templatePath('_bower.json'),
-        this.destinationPath('bower.json')
+        this.destinationPath('bower.json'),
+        { name: this.campaign}
+      );
+
+      this.fs.copyTpl(
+        this.templatePath('src/_index.jade'),
+        this.destinationPath('src/index.jade'),
+        { title: this.campaign + ' email campaign'}
       );
 
       this.fs.copy(
-        this.templatePath('src/*'),
-        this.destinationPath('src/*')
+        this.templatePath('src/_main.' + this.preprocessorExtension),
+        this.destinationPath('src/main.' + this.preprocessorExtension)
       );
-    },
-  },
 
-  setup: function () {
-    //bower
-    this.bowerInstall(baseBowerRequirements, {'saveDev': true});
+      this.fs.copy(
+        this.templatePath('src/' + this.preprocessorExtension + '/__base.' + this.preprocessorExtension),
+        this.destinationPath('src/'+ this.preprocessorExtension +'/_base.' + this.preprocessorExtension)
+      );
 
-    //npm
-    this.npmInstall(baseNodeRequirements, { 'saveDev': true });
-
-    //install chosen precompiler
-    if (this.preprocessor === 'sass') {
-      this.npmInstall(['grunt-contrib-sass'], { 'saveDev': true });
-    }else if( this.preprocessor === 'less'){
-      this.npmInstall(['grunt-contrib-less'], { 'saveDev': true });
+      this.fs.copyTpl(
+        this.templatePath('_Gruntfile.js'),
+        this.destinationPath('Gruntfile.js'),
+        { processor: this.preprocessor,
+          processorExtension: this.preprocessorExtension}
+      );
     }
   },
 
+  setup: function () {
 
-  inkConfig: function () {
-    this.fs.copy(
-      this.destinationRoot('/bower_components/ink/ink.css'),
-      this.destinationRoot('')
-    );
+    //install chosen precompiler
+    if (this.preprocessor === 'sass') {
+      baseNodeRequirements.push('grunt-contrib-sass');
+    }else if( this.preprocessor === 'less'){
+      baseNodeRequirements.push('grunt-contrib-less');
+    }
+
+    //bower
+    this.bowerInstall(baseBowerRequirements, {'saveDev': true});
+    //npm
+    this.npmInstall(baseNodeRequirements, { 'saveDev': true });
   }
+
 });
